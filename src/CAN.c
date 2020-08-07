@@ -165,6 +165,10 @@ static int CAN_write_frame_phy(const CAN_frame_t *p_frame) {
 }
 
 int CAN_init() {
+    return CAN_init2(false);
+}
+
+int CAN_init2(bool listenOnly) {
 
 	// Time quantum
 	double __tq;
@@ -255,6 +259,12 @@ int CAN_init() {
 
 	// allocate the tx complete semaphore
 	sem_tx_complete = xSemaphoreCreateBinary();
+
+    if (listenOnly)
+    {
+        // listen only!
+        MODULE_CAN->MOD.B.LOM = 1;
+    }
 
 	// Showtime. Release Reset Mode.
 	MODULE_CAN->MOD.B.RM = 0;

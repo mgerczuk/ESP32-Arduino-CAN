@@ -101,6 +101,14 @@ typedef struct {
 int CAN_init(void);
 
 /**
+ * \brief Initialize the CAN Module
+ *
+ * \param	listenOnly true, if module should be listen-only
+ * \return 0 CAN Module had been initialized
+ */
+int CAN_init2(bool listenOnly);
+
+/**
  * \brief Send a can frame
  *
  * \param	p_frame	Pointer to the frame to be send, see #CAN_frame_t

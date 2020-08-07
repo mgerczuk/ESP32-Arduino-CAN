@@ -1,8 +1,8 @@
 #include "ESP32CAN.h"
 
-int ESP32CAN::CANInit()
+int ESP32CAN::CANInit(bool listenOnly)
 {
-    return CAN_init();
+    return CAN_init2(listenOnly);
 }
 int ESP32CAN::CANWriteFrame(const CAN_frame_t* p_frame)
 {
