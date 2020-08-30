@@ -35,6 +35,7 @@
 #include "freertos/queue.h"
 
 #include "esp_intr.h"
+#include "esp_timer.h"
 #include "soc/dport_reg.h"
 #include <math.h>
 
@@ -121,7 +122,7 @@ static void CAN_read_frame_phy(BaseType_t *higherPriorityTaskWoken) {
 			__frame.data.u8[__byte_i] = MODULE_CAN->MBX_CTRL.FCTRL.TX_RX.EXT.data[__byte_i];
 	}
 
-	__frame.time_us = micros();
+	__frame.time_us = esp_timer_get_time();
 
 	// send frame to input queue
 	xQueueSendToBackFromISR(CAN_cfg.rx_queue, &__frame, higherPriorityTaskWoken);
