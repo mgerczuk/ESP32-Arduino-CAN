@@ -30,6 +30,7 @@
 #define __DRIVERS_CAN_H__
 
 #include <stdint.h>
+#include <sys/time.h>
 #include "CAN_config.h"
 
 #ifdef __cplusplus
@@ -73,7 +74,7 @@ typedef struct {
 		uint32_t u32[2]; /**< \brief Payload u32 access*/
 		uint64_t u64;    /**< \brief Payload u64 access*/
 	} data;
-	int64_t time_us;
+	struct timeval tv;
 } CAN_frame_t;
 
 typedef enum {
