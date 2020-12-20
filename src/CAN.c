@@ -257,11 +257,11 @@ int CAN_init2(bool listenOnly) {
 	// clear interrupt flags
 	(void) MODULE_CAN->IR.U;
 
-	// install CAN ISR
-	esp_intr_alloc(ETS_CAN_INTR_SOURCE, 0, CAN_isr, NULL, NULL);
-
 	// allocate the tx complete semaphore
 	sem_tx_complete = xSemaphoreCreateBinary();
+
+	// install CAN ISR
+	esp_intr_alloc(ETS_CAN_INTR_SOURCE, 0, CAN_isr, NULL, NULL);
 
     if (listenOnly)
     {
