@@ -5,7 +5,6 @@
  *
  * Copyright (c) 2017, Thomas Barth, barth-dev.de
  *               2017, Jaime Breva, jbreva@nayarsystems.com
- * 				 2018, Michael Wagner, mw@iot-make.de
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -34,8 +33,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
 
-#include "esp_intr.h"
-#include "esp_timer.h"
+#include "esp_intr_alloc.h"
 #include "soc/dport_reg.h"
 #include <math.h>
 
@@ -43,9 +41,6 @@
 
 #include "can_regdef.h"
 #include "CAN_config.h"
-
-// CAN Filter - no acceptance filter
-static CAN_filter_t __filter = { Dual_Mode, 0, 0, 0, 0, 0Xff, 0Xff, 0Xff, 0Xff };
 
 static void CAN_read_frame_phy();
 static void CAN_isr(void *arg_p);
@@ -122,8 +117,6 @@ static void CAN_read_frame_phy(BaseType_t *higherPriorityTaskWoken) {
 			__frame.data.u8[__byte_i] = MODULE_CAN->MBX_CTRL.FCTRL.TX_RX.EXT.data[__byte_i];
 	}
 
-	gettimeofday(&__frame.tv, NULL);
-
 	// send frame to input queue
 	xQueueSendToBackFromISR(CAN_cfg.rx_queue, &__frame, higherPriorityTaskWoken);
 
@@ -168,10 +161,6 @@ static int CAN_write_frame_phy(const CAN_frame_t *p_frame) {
 }
 
 int CAN_init() {
-    return CAN_init2(false);
-}
-
-int CAN_init2(bool listenOnly) {
 
 	// Time quantum
 	double __tq;
@@ -235,16 +224,15 @@ int CAN_init2(bool listenOnly) {
 	// enable all interrupts
 	MODULE_CAN->IER.U = 0xff;
 
-	 // Set acceptance filter	
-	MODULE_CAN->MOD.B.AFM = __filter.FM;	
-    MODULE_CAN->MBX_CTRL.ACC.CODE[0] = __filter.ACR0;
-    MODULE_CAN->MBX_CTRL.ACC.CODE[1] = __filter.ACR1;
-    MODULE_CAN->MBX_CTRL.ACC.CODE[2] = __filter.ACR2;
-    MODULE_CAN->MBX_CTRL.ACC.CODE[3] = __filter.ACR3;
-    MODULE_CAN->MBX_CTRL.ACC.MASK[0] = __filter.AMR0;
-    MODULE_CAN->MBX_CTRL.ACC.MASK[1] = __filter.AMR1;
-    MODULE_CAN->MBX_CTRL.ACC.MASK[2] = __filter.AMR2;
-    MODULE_CAN->MBX_CTRL.ACC.MASK[3] = __filter.AMR3;
+	// no acceptance filtering, as we want to fetch all messages
+	MODULE_CAN->MBX_CTRL.ACC.CODE[0] = 0;
+	MODULE_CAN->MBX_CTRL.ACC.CODE[1] = 0;
+	MODULE_CAN->MBX_CTRL.ACC.CODE[2] = 0;
+	MODULE_CAN->MBX_CTRL.ACC.CODE[3] = 0;
+	MODULE_CAN->MBX_CTRL.ACC.MASK[0] = 0xff;
+	MODULE_CAN->MBX_CTRL.ACC.MASK[1] = 0xff;
+	MODULE_CAN->MBX_CTRL.ACC.MASK[2] = 0xff;
+	MODULE_CAN->MBX_CTRL.ACC.MASK[3] = 0xff;
 
 	// set to normal mode
 	MODULE_CAN->OCR.B.OCMODE = __CAN_OC_NOM;
@@ -263,7 +251,7 @@ int CAN_init2(bool listenOnly) {
 	// install CAN ISR
 	esp_intr_alloc(ETS_CAN_INTR_SOURCE, 0, CAN_isr, NULL, NULL);
 
-    if (listenOnly)
+    if (CAN_cfg.listen_only)
     {
         // listen only!
         MODULE_CAN->MOD.B.LOM = 1;
@@ -293,20 +281,5 @@ int CAN_stop() {
 	// enter reset mode
 	MODULE_CAN->MOD.B.RM = 1;
 
-	return 0;
-}
-
-int CAN_config_filter(const CAN_filter_t* p_filter) {
-	
-	__filter.FM = p_filter->FM;	
-    __filter.ACR0 = p_filter->ACR0;
-    __filter.ACR1 = p_filter->ACR1;
-    __filter.ACR2 = p_filter->ACR2;
-    __filter.ACR3 = p_filter->ACR3;
-    __filter.AMR0 = p_filter->AMR0;
-    __filter.AMR1 = p_filter->AMR1;
-    __filter.AMR2 = p_filter->AMR2;
-    __filter.AMR3 = p_filter->AMR3;
-	
 	return 0;
 }

@@ -4,7 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2017, Thomas Barth, barth-dev.de
- *               2018, Michael Wagner, mw@iot-make.de
+ *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
  * files (the "Software"), to deal in the Software without
@@ -74,26 +74,7 @@ typedef struct {
 		uint32_t u32[2]; /**< \brief Payload u32 access*/
 		uint64_t u64;    /**< \brief Payload u64 access*/
 	} data;
-	struct timeval tv;
 } CAN_frame_t;
-
-typedef enum {
-	Dual_Mode=0, 							/**< \brief The dual acceptance filter option is enabled (two filters, each with the length of 16 bit are active) */
-	Single_Mode=1 							/**< \brief The single acceptance filter option is enabled (one filter with the length of 32 bit is active) */
-} CAN_filter_mode_t;
-
-/** \brief CAN Filter structure */
-typedef struct {
-    CAN_filter_mode_t 	FM:1;          		/**< \brief [0:0] Filter Mode */
-    uint8_t 			ACR0;				/**< \brief Acceptance Code Register ACR0 */
-	uint8_t 			ACR1;				/**< \brief Acceptance Code Register ACR1 */
-	uint8_t 			ACR2;				/**< \brief Acceptance Code Register ACR2 */
-	uint8_t 			ACR3;				/**< \brief Acceptance Code Register ACR3 */
-	uint8_t 			AMR0;				/**< \brief Acceptance Mask Register AMR0 */
-	uint8_t 			AMR1;				/**< \brief Acceptance Mask Register AMR1 */
-	uint8_t 			AMR2;				/**< \brief Acceptance Mask Register AMR2 */
-	uint8_t 			AMR3;				/**< \brief Acceptance Mask Register AMR3 */
-} CAN_filter_t;
 
 /**
  * \brief Initialize the CAN Module
@@ -101,14 +82,6 @@ typedef struct {
  * \return 0 CAN Module had been initialized
  */
 int CAN_init(void);
-
-/**
- * \brief Initialize the CAN Module
- *
- * \param	listenOnly true, if module should be listen-only
- * \return 0 CAN Module had been initialized
- */
-int CAN_init2(bool listenOnly);
 
 /**
  * \brief Send a can frame
@@ -124,15 +97,6 @@ int CAN_write_frame(const CAN_frame_t *p_frame);
  * \return 0 CAN Module was stopped
  */
 int CAN_stop(void);
-
-/**
- * \brief Config CAN Filter, must call before CANInit()
- *
- * \param	p_filter Pointer to the filter, see #CAN_filter_t
- * \return  0 CAN Filter had been initialized
- */
-int CAN_config_filter(const CAN_filter_t* p_filter);
-
 
 #ifdef __cplusplus
 }
